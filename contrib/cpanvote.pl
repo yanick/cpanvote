@@ -68,7 +68,7 @@ package My::Agent;
 use parent 'LWP::UserAgent';
 
 sub get_basic_credentials {
-    return ( 'yanick', 'foo' );
+    return ( $username, $password );
 }
 
 1;

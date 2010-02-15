@@ -95,7 +95,7 @@ sub vote : Chained('base') : PathPart(vote) : ActionClass('REST') : Args(0) {
 sub vote_PUT {
     my ( $self, $c ) = @_;
 
-    $c->authenticate();
+    $c->authenticate;
 
     my %data = %{ $c->req->data };
 
@@ -112,11 +112,7 @@ sub vote_PUT {
 
     Dwarn %data;
 
-    my $user =
-      $c->model('cpanvoteDB::Users')
-      ->find( { username => $c->user->get('id') } );
-
-    Dwarn $c->user->get('id');
+    my $user = $c->user;
 
     $user->update_or_create_related(
         'votes' => {

@@ -49,10 +49,8 @@ __PACKAGE__->config(
                     password_field => 'password'
                 },
                 store => {
-                    class => 'Minimal',
-                    users => {
-                        yanick => { password => "foo", },
-                    },
+                    class => 'DBIx::Class',
+                    user_model => 'cpanvoteDB::Users',
                 },
             },
         }
