@@ -16,6 +16,8 @@ use Catalyst qw/
     -Debug
     ConfigLoader
     Static::Simple
+    Authentication
+    Cache
 /;
 
 extends 'Catalyst';
@@ -36,7 +38,31 @@ __PACKAGE__->config(
     name => 'cpanvote',
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
+    authentication => {
+        default_realm => 'http',
+        realms => { 
+            http => { 
+                credential => { 
+                    class => 'HTTP',
+                    type  => 'any', # or 'digest' or 'basic'
+                    password_type  => 'clear',
+                    password_field => 'password'
+                },
+                store => {
+                    class => 'Minimal',
+                    users => {
+                        yanick => { password => "foo", },
+                    },
+                },
+            },
+        }
+        },
 );
+
+__PACKAGE__->config->{'Plugin::Cache'}{backend} = {
+    class   => "Cache::Memory",
+};
+
 
 # Start the application
 __PACKAGE__->setup();

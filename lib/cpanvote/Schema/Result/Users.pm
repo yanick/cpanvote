@@ -1,4 +1,4 @@
-package cpanvote::Schema::Users;
+package cpanvote::Schema::Result::Users;
 
 use strict;
 use warnings;
@@ -28,5 +28,7 @@ __PACKAGE__->add_columns(
 __PACKAGE__->add_unique_constraint( unique_username => ['username'], );
 
 __PACKAGE__->set_primary_key('id');
+
+__PACKAGE__->has_many( 'votes', 'cpanvote::Schema::Result::Votes', 'user_id' );
 
 1;

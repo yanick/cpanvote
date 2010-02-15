@@ -1,4 +1,4 @@
-package cpanvote::Schema::Distributions;
+package cpanvote::Schema::Result::Distributions;
 
 use strict;
 use warnings;
@@ -23,6 +23,8 @@ __PACKAGE__->add_columns(
 __PACKAGE__->add_unique_constraint( unique_distname => ['distname'], );
 
 __PACKAGE__->set_primary_key('id');
+
+__PACKAGE__->has_many( 'votes', 'cpanvote::Schema::Result::Votes', 'dist_id' );
 
 1;
 

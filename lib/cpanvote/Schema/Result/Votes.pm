@@ -1,4 +1,4 @@
-package cpanvote::Schema::Votes;
+package cpanvote::Schema::Result::Votes;
 
 use strict;
 use warnings;
@@ -18,20 +18,24 @@ __PACKAGE__->add_columns(
     },
     vote => {
         data_type => 'integer',
+        is_nullable => 1,
     },
     comment => {
         data_type => 'varchar',
         size => 140,
+        is_nullable => 1,
     },
-    instead => {
+    instead_id => {
         data_type => 'integer',
+        is_nullable => 1,
     },
 );
 
 __PACKAGE__->set_primary_key(qw/ user_id dist_id /);
 
-__PACKAGE__->belongs_to( user => 'cpanvote::Schema::Users', 'user_id' );
-__PACKAGE__->belongs_to( dist => 'cpanvote::Schema::Distributions', 'dist_id' );
+__PACKAGE__->belongs_to( user => 'cpanvote::Schema::Result::Users', 'user_id' );
+__PACKAGE__->belongs_to( dist => 'cpanvote::Schema::Result::Distributions', 'dist_id' );
+__PACKAGE__->belongs_to( instead => 'cpanvote::Schema::Result::Distributions', 'instead_id' );
 
 
 1;
