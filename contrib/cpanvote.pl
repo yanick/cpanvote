@@ -7,6 +7,8 @@ use Getopt::Long;
 use REST::Client;
 use JSON;
 
+my $host = "localhost:3000";
+
 GetOptions(
     'yeah!'      => \my $yeah,
     'neah!'      => \my $neah,
@@ -16,13 +18,13 @@ GetOptions(
     'user=s'     => \my $username,
     'password=s' => \my $password,
     'register!'  => \my $register,
+    'host'       => \$host,
 );
-
 
 die "user and password required\n" unless $username and $password;
 
 my $client = REST::Client->new( follow => 1, useragent => My::Agent->new );
-$client->setHost('http://localhost:3000');
+$client->setHost('http://'.$host);
 
 exit register_user() if $register;
 

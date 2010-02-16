@@ -14,6 +14,9 @@ requires 'Moose';
 requires 'namespace::autoclean';
 requires 'Config::General'; # This should reflect the config file format you've chosen
                  # See Catalyst::Plugin::ConfigLoader for supported formats
+requires 'Catalyst::Authentication::Credential::HTTP';
+requires 'Catalyst::Authentication::Store::DBIx::Class';
+
 test_requires 'Test::More' => '0.88';
 catalyst;
 
