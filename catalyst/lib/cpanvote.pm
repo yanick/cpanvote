@@ -13,7 +13,6 @@ use Catalyst::Runtime 5.80;
 #                 directory
 
 use Catalyst qw/
-    -Debug
     ConfigLoader
     Static::Simple
     Authentication
@@ -53,8 +52,24 @@ __PACKAGE__->config(
                     user_model => 'cpanvoteDB::Users',
                 },
             },
-        }
+            twitter => {
+                credential => { 
+                    class => 'Twitter',
+                },
+                consumer_key    => 'Bfco4J8hvOIWcd0NmpRog',
+                consumer_secret => 'p9tcMQkTnZ3fJYrbVR4PUK6CQkGbEGIdPS9strK2o',
+                callback_url    => 'http://localhost/auth/twitter/callback',
+            },
+            twitter_cli => {
+                credential => { 
+                    class => 'Twitter',
+                },
+                consumer_key    => 'zyhUrjCgTgs06ox1BJ7HGg',
+                consumer_secret => 'osuYUQacxYcEpPA0edeb0h7tJs5ENzJedEZJi0RXbw',
+                callback_url    => 'http://localhost/auth/twitter/callback',
+            }
         },
+    }
 );
 
 __PACKAGE__->config->{'Plugin::Cache'}{backend} = {
