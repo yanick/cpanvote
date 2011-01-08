@@ -1,0 +1,740 @@
+---
+schema:
+  procedures: {}
+  tables:
+    Distributions:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - distname
+          match_type: ''
+          name: unique_distname
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+      fields:
+        distname:
+          data_type: varchar
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: distname
+          order: 2
+          size:
+            - 30
+        foo:
+          data_type: varchar
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: foo
+          order: 3
+          size:
+            - 30
+        id:
+          data_type: integer
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 0
+      indices: []
+      name: Distributions
+      options: []
+      order: 1
+    TagDist:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - tag_id
+            - dist_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - dist_id
+          match_type: ''
+          name: TagDist_fk_dist_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - id
+          reference_table: Distributions
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - tag_id
+          match_type: ''
+          name: TagDist_fk_tag_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - id
+          reference_table: Tags
+          type: FOREIGN KEY
+      fields:
+        dist_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: dist_id
+          order: 2
+          size:
+            - 0
+        tag_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: tag_id
+          order: 1
+          size:
+            - 0
+      indices:
+        - fields:
+            - dist_id
+          name: TagDist_idx_dist_id
+          options: []
+          type: NORMAL
+        - fields:
+            - tag_id
+          name: TagDist_idx_tag_id
+          options: []
+          type: NORMAL
+      name: TagDist
+      options: []
+      order: 5
+    Tags:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - user_id
+            - name
+          match_type: ''
+          name: unique_row
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+        - deferrable: 1
+          expression: ''
+          fields:
+            - user_id
+          match_type: ''
+          name: Tags_fk_user_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - id
+          reference_table: Users
+          type: FOREIGN KEY
+      fields:
+        id:
+          data_type: integer
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 0
+        name:
+          data_type: varchar
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: name
+          order: 3
+          size:
+            - 20
+        user_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 1
+          name: user_id
+          order: 2
+          size:
+            - 0
+      indices:
+        - fields:
+            - user_id
+          name: Tags_idx_user_id
+          options: []
+          type: NORMAL
+      name: Tags
+      options: []
+      order: 3
+    Users:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - username
+          match_type: ''
+          name: unique_username
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: UNIQUE
+      fields:
+        id:
+          data_type: integer
+          default_value: ~
+          is_auto_increment: 1
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: id
+          order: 1
+          size:
+            - 0
+        password:
+          data_type: varchar
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 0
+          name: password
+          order: 3
+          size:
+            - 20
+        username:
+          data_type: varchar
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 0
+          is_unique: 1
+          name: username
+          order: 2
+          size:
+            - 20
+      indices: []
+      name: Users
+      options: []
+      order: 2
+    Votes:
+      constraints:
+        - deferrable: 1
+          expression: ''
+          fields:
+            - user_id
+            - dist_id
+          match_type: ''
+          name: ''
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields: []
+          reference_table: ''
+          type: PRIMARY KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - dist_id
+          match_type: ''
+          name: Votes_fk_dist_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - id
+          reference_table: Distributions
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - instead_id
+          match_type: ''
+          name: Votes_fk_instead_id
+          on_delete: ''
+          on_update: ''
+          options: []
+          reference_fields:
+            - id
+          reference_table: Distributions
+          type: FOREIGN KEY
+        - deferrable: 1
+          expression: ''
+          fields:
+            - user_id
+          match_type: ''
+          name: Votes_fk_user_id
+          on_delete: CASCADE
+          on_update: CASCADE
+          options: []
+          reference_fields:
+            - id
+          reference_table: Users
+          type: FOREIGN KEY
+      fields:
+        comment:
+          data_type: varchar
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: comment
+          order: 4
+          size:
+            - 140
+        dist_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: dist_id
+          order: 2
+          size:
+            - 0
+        instead_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: instead_id
+          order: 5
+          size:
+            - 0
+        user_id:
+          data_type: integer
+          default_value: ~
+          is_nullable: 0
+          is_primary_key: 1
+          is_unique: 0
+          name: user_id
+          order: 1
+          size:
+            - 0
+        vote:
+          data_type: integer
+          default_value: ~
+          is_nullable: 1
+          is_primary_key: 0
+          is_unique: 0
+          name: vote
+          order: 3
+          size:
+            - 0
+      indices:
+        - fields:
+            - dist_id
+          name: Votes_idx_dist_id
+          options: []
+          type: NORMAL
+        - fields:
+            - instead_id
+          name: Votes_idx_instead_id
+          options: []
+          type: NORMAL
+        - fields:
+            - user_id
+          name: Votes_idx_user_id
+          options: []
+          type: NORMAL
+      name: Votes
+      options: []
+      order: 4
+  triggers: {}
+  views: {}
+translator:
+  add_drop_table: 0
+  filename: ~
+  no_comments: 0
+  parser_args:
+    package: &1 !!perl/hash:cpanvote::Schema
+      class_mappings:
+        DBIx::Class::DeploymentHandler::VersionStorage::Standard::VersionResult: __VERSION
+        cpanvote::Schema::Result::Distributions: Distributions
+        cpanvote::Schema::Result::TagDist: TagDist
+        cpanvote::Schema::Result::Tags: Tags
+        cpanvote::Schema::Result::Users: Users
+        cpanvote::Schema::Result::Votes: Votes
+      source_registrations:
+        Distributions: !!perl/hash:DBIx::Class::ResultSource::Table
+          _columns:
+            distname:
+              data_type: varchar
+              is_nullable: 0
+              size: 30
+            foo:
+              data_type: varchar
+              is_nullable: 1
+              size: 30
+            id:
+              data_type: integer
+              is_auto_increment: 1
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - id
+            - distname
+            - foo
+          _primaries: &2
+            - id
+          _relationships:
+            disttags:
+              attrs:
+                accessor: multi
+                cascade_copy: 1
+                cascade_delete: 1
+                join_type: LEFT
+              class: cpanvote::Schema::Result::TagDist
+              cond:
+                foreign.dist_id: self.id
+              source: cpanvote::Schema::Result::TagDist
+            votes:
+              attrs:
+                accessor: multi
+                cascade_copy: 1
+                cascade_delete: 1
+                join_type: LEFT
+              class: cpanvote::Schema::Result::Votes
+              cond:
+                foreign.dist_id: self.id
+              source: cpanvote::Schema::Result::Votes
+          _unique_constraints:
+            primary: *2
+            unique_distname:
+              - distname
+          name: Distributions
+          result_class: cpanvote::Schema::Result::Distributions
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::ResultSet
+          schema: *1
+          source_name: Distributions
+          sqlt_deploy_callback: default_sqlt_deploy_hook
+        TagDist: !!perl/hash:DBIx::Class::ResultSource::Table
+          _columns:
+            dist_id:
+              data_type: integer
+            tag_id:
+              data_type: integer
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - tag_id
+            - dist_id
+          _primaries: &3
+            - tag_id
+            - dist_id
+          _relationships:
+            dist:
+              attrs:
+                accessor: single
+                is_foreign_key_constraint: 1
+                undef_on_null_fk: 1
+              class: cpanvote::Schema::Result::Distributions
+              cond:
+                foreign.id: self.dist_id
+              source: cpanvote::Schema::Result::Distributions
+            tag:
+              attrs:
+                accessor: single
+                is_foreign_key_constraint: 1
+                undef_on_null_fk: 1
+              class: cpanvote::Schema::Result::Tags
+              cond:
+                foreign.id: self.tag_id
+              source: cpanvote::Schema::Result::Tags
+          _unique_constraints:
+            primary: *3
+          name: TagDist
+          result_class: cpanvote::Schema::Result::TagDist
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::ResultSet
+          schema: *1
+          source_name: TagDist
+          sqlt_deploy_callback: default_sqlt_deploy_hook
+        Tags: !!perl/hash:DBIx::Class::ResultSource::Table
+          _columns:
+            id:
+              data_type: integer
+              is_auto_increment: 1
+            name:
+              data_type: varchar
+              size: 20
+            user_id:
+              data_type: integer
+              is_nullable: 1
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - id
+            - user_id
+            - name
+          _primaries: &4
+            - id
+          _relationships:
+            disttags:
+              attrs:
+                accessor: multi
+                cascade_copy: 1
+                cascade_delete: 1
+                join_type: LEFT
+              class: cpanvote::Schema::Result::TagDist
+              cond:
+                foreign.tag_id: self.id
+              source: cpanvote::Schema::Result::TagDist
+            user:
+              attrs:
+                accessor: single
+                is_foreign_key_constraint: 1
+                undef_on_null_fk: 1
+              class: cpanvote::Schema::Result::Users
+              cond:
+                foreign.id: self.user_id
+              source: cpanvote::Schema::Result::Users
+          _unique_constraints:
+            primary: *4
+            unique_row:
+              - user_id
+              - name
+          name: Tags
+          result_class: cpanvote::Schema::Result::Tags
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::ResultSet
+          schema: *1
+          source_name: Tags
+          sqlt_deploy_callback: default_sqlt_deploy_hook
+        Users: !!perl/hash:DBIx::Class::ResultSource::Table
+          _columns:
+            id:
+              data_type: integer
+              is_auto_increment: 1
+            password:
+              data_type: varchar
+              is_nullable: 0
+              size: 20
+            username:
+              data_type: varchar
+              is_nullable: 0
+              size: 20
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - id
+            - username
+            - password
+          _primaries: &5
+            - id
+          _relationships:
+            votes:
+              attrs:
+                accessor: multi
+                cascade_copy: 1
+                cascade_delete: 1
+                join_type: LEFT
+              class: cpanvote::Schema::Result::Votes
+              cond:
+                foreign.user_id: self.id
+              source: cpanvote::Schema::Result::Votes
+          _unique_constraints:
+            primary: *5
+            unique_username:
+              - username
+          name: Users
+          result_class: cpanvote::Schema::Result::Users
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::ResultSet
+          schema: *1
+          source_name: Users
+          sqlt_deploy_callback: default_sqlt_deploy_hook
+        Votes: !!perl/hash:DBIx::Class::ResultSource::Table
+          _columns:
+            comment:
+              data_type: varchar
+              is_nullable: 1
+              size: 140
+            dist_id:
+              data_type: integer
+            instead_id:
+              data_type: integer
+              is_nullable: 1
+            user_id:
+              data_type: integer
+            vote:
+              data_type: integer
+              is_nullable: 1
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - user_id
+            - dist_id
+            - vote
+            - comment
+            - instead_id
+          _primaries: &6
+            - user_id
+            - dist_id
+          _relationships:
+            dist:
+              attrs:
+                accessor: single
+                is_foreign_key_constraint: 1
+                undef_on_null_fk: 1
+              class: cpanvote::Schema::Result::Distributions
+              cond:
+                foreign.id: self.dist_id
+              source: cpanvote::Schema::Result::Distributions
+            instead:
+              attrs:
+                accessor: single
+                is_foreign_key_constraint: 1
+                undef_on_null_fk: 1
+              class: cpanvote::Schema::Result::Distributions
+              cond:
+                foreign.id: self.instead_id
+              source: cpanvote::Schema::Result::Distributions
+            user:
+              attrs:
+                accessor: single
+                is_foreign_key_constraint: 1
+                undef_on_null_fk: 1
+              class: cpanvote::Schema::Result::Users
+              cond:
+                foreign.id: self.user_id
+              source: cpanvote::Schema::Result::Users
+          _unique_constraints:
+            primary: *6
+          name: Votes
+          result_class: cpanvote::Schema::Result::Votes
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::ResultSet
+          schema: *1
+          source_name: Votes
+          sqlt_deploy_callback: default_sqlt_deploy_hook
+        __VERSION: !!perl/hash:DBIx::Class::ResultSource::Table
+          _columns:
+            ddl:
+              data_type: text
+              is_nullable: 1
+            id:
+              data_type: int
+              is_auto_increment: 1
+            upgrade_sql:
+              data_type: text
+              is_nullable: 1
+            version:
+              data_type: varchar
+              size: 50
+          _columns_info_loaded: 0
+          _ordered_columns:
+            - id
+            - version
+            - ddl
+            - upgrade_sql
+          _primaries: &7
+            - id
+          _relationships: {}
+          _unique_constraints:
+            dbix_class_deploymenthandler_versions_version:
+              - version
+            primary: *7
+          name: dbix_class_deploymenthandler_versions
+          result_class: DBIx::Class::DeploymentHandler::VersionStorage::Standard::VersionResult
+          resultset_attributes: {}
+          resultset_class: DBIx::Class::DeploymentHandler::VersionStorage::Standard::VersionResultSet
+          schema: *1
+          source_name: __VERSION
+          sqlt_deploy_callback: default_sqlt_deploy_hook
+      storage: !!perl/hash:DBIx::Class::Storage::DBI
+        _connect_info:
+          - dbi:SQLite:mydb
+        _dbh_details: {}
+        _dbh_gen: 0
+        _dbi_connect_info:
+          - dbi:SQLite:mydb
+          - ~
+          - ~
+          - &8
+            AutoCommit: 1
+            PrintError: 0
+            RaiseError: 1
+        _dbic_connect_attributes: *8
+        _in_dbh_do: 0
+        _sql_maker: ~
+        _sql_maker_opts: {}
+        debugobj: !!perl/hash:DBIx::Class::Storage::Statistics {}
+        savepoints: []
+        schema: *1
+        transaction_depth: 0
+    sources:
+      - Users
+      - Tags
+      - Distributions
+      - TagDist
+      - Votes
+  parser_type: SQL::Translator::Parser::DBIx::Class
+  producer_args: {}
+  producer_type: SQL::Translator::Producer::YAML
+  show_warnings: 0
+  trace: 0
+  version: 0.11006
