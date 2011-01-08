@@ -1,0 +1,113 @@
+% my $cpanvote_url = 'http://enkidu:3000';
+<html>
+<head>
+	<script type="text/javascript" src="/javascripts/jquery.js">
+    </script>
+    <script>
+        var is_authenticated = false;
+    </script>
+<style>
+.dist-name {
+    width: 150px;
+}
+.dist-name, .votes, .voting_block {
+    display: inline-block;
+}
+.voting_block {
+    margin-left: 25px;
+}
+</style>
+</head>
+	<body>
+    <div class="logging">
+		<a href="<% $cpanvote_url %>/auth/authenticate">log in</a> to be able to vote
+        </div>
+        <script type="text/javascript">
+        $.getJSON('<% $cpanvote_url %>/auth/authenticated', function(data){
+            if ( data["username"] != undefined ) {
+                $('.logging').html( "welcome " +data.username + "!" );
+                is_authenticated = true;
+                $('.distribution .voting_block').show();
+            }
+        });
+        </script>
+
+% for my $d ( qw/ Dist::Zilla Dist::Release XML::Simple XML::LibXML / ) {
+<div class="distribution"><div class="dist-name"><% $d %></div></div>
+% }
+
+<div style="display: none" id="vote_template" class="voting_block">
+<form action="<% $cpanvote_url %>/dist/">
+    vote: 
+        <input type="radio" name="vote" value="yea"> yea  
+        <input type="radio" name="vote" value="nea"> nea  
+        <input type="radio" name="vote" value="meh"> meh  
+</form>
+</div>
+
+<script>
+
+    $('div.distribution').each(function(){
+        $(this).append( '<div class="votes"></span>' );
+    });
+
+    add_voting_blocks();
+
+    $('div.distribution').each(function(){
+        var distnode = $(this);
+        var distname = distnode.find('.dist-name').text();
+
+        get_votes_for( distnode, distname );
+    });
+
+function add_voting_blocks () {
+    $('div.distribution').each(function(){
+        add_voting_block( $(this), $(this).find('.dist-name').text() );
+    });
+}
+    
+function add_voting_block ( distnode, distname ) {
+    var block = $('#vote_template').clone();
+    block.attr('id', "" );
+
+    block.find('form').attr('action', 
+         block.find('form').attr('action') + distname + '/vote/'
+    );
+    block.find('input').click( function() {
+        vote_for( distnode, distname );
+    });
+   distnode.append( block ); 
+}
+
+function vote_for ( distnode, distname ) {
+    var url = distnode.find('form').attr('action');
+    url = url + distnode.find(':radio:checked').val();
+    $.getJSON( url, function(){ 
+        get_votes_for( distnode, distname );
+    });
+}
+
+
+function get_votes_for ( distnode, distname ) {
+    $.getJSON( '<% $cpanvote_url %>/dist/' + distname + '/votes',
+    function(data) {
+        distnode.find('.votes').html(
+            data["yea"] + " yeas, "
+          + data["nea"] + " neas, "
+          + data["meh"] + " mehs"
+        );
+
+        if ( data["my_vote"] != undefined ) {
+            distnode.find(':radio[value="' + data["my_vote"] + '"]').attr('checked', true );
+        }
+        else {
+            distnode.find(':radio').attr('checked', false );
+        }
+
+    });
+}
+    
+</script>
+
+	</body>
+</html>
