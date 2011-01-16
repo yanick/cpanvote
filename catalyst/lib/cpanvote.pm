@@ -4,19 +4,15 @@ use namespace::autoclean;
 
 use Catalyst::Runtime 5.80;
 
-# Set flags and add plugins for the application
-#
-#         -Debug: activates the debug mode for very useful log messages
-#   ConfigLoader: will load the configuration from a Config::General file in the
-#                 application's home directory
-# Static::Simple: will serve static files from the application's root
-#                 directory
-
 use Catalyst qw/
     ConfigLoader
     Static::Simple
     Authentication
     Cache
+    Session
+    Session::Store::DBIC
+    Session::State::Cookie
+    Session::PerUser
 /;
 
 extends 'Catalyst';
@@ -24,52 +20,32 @@ extends 'Catalyst';
 our $VERSION = '0.01';
 $VERSION = eval $VERSION;
 
-# Configure the application.
-#
-# Note that settings in cpanvote.conf (or other external
-# configuration file that you set up manually) take precedence
-# over this when using ConfigLoader. Thus configuration
-# details given here can function as a default configuration,
-# with an external configuration file acting as an override for
-# local deployment.
-
 __PACKAGE__->config(
     name => 'cpanvote',
+    default_view => 'mason',
     # Disable deprecated behavior needed by old applications
     disable_component_resolution_regex_fallback => 1,
     authentication => {
-        default_realm => 'http',
+        default_realm => 'twitter',
         realms => { 
-            http => { 
-                credential => { 
-                    class => 'HTTP',
-                    type  => 'any', # or 'digest' or 'basic'
-                    password_type  => 'clear',
-                    password_field => 'password'
-                },
-                store => {
-                    class => 'DBIx::Class',
-                    user_model => 'cpanvoteDB::Users',
-                },
-            },
             twitter => {
                 credential => { 
                     class => 'Twitter',
                 },
                 consumer_key    => 'Bfco4J8hvOIWcd0NmpRog',
                 consumer_secret => 'p9tcMQkTnZ3fJYrbVR4PUK6CQkGbEGIdPS9strK2o',
-                callback_url    => 'http://localhost/auth/twitter/callback',
-            },
-            twitter_cli => {
-                credential => { 
-                    class => 'Twitter',
+                callback_url    => 'http://enkidu:3000/auth/twitter/callback',
+                store => {
+                    class => 'DBIx::Class',
+                    user_model => 'cpanvoteDB::AuthTwitter',
                 },
-                consumer_key    => 'zyhUrjCgTgs06ox1BJ7HGg',
-                consumer_secret => 'osuYUQacxYcEpPA0edeb0h7tJs5ENzJedEZJi0RXbw',
-                callback_url    => 'http://localhost/auth/twitter/callback',
-            }
+            },
         },
-    }
+    },
+    'Plugin::Session' => {
+        dbic_class => 'cpanvoteDB::Sessions',
+        expires => 60 * 60 * 24 * 30,  # 30 days
+    },
 );
 
 __PACKAGE__->config->{'Plugin::Cache'}{backend} = {

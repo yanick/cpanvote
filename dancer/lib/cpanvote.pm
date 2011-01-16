@@ -87,6 +87,8 @@ get '/welcome' => sub {
 
 get '/dist/:dist/vote/:vote' => sub {
 
+    params->{dist} =~ s/::/-/g;
+
     return send_error( 'you must be logged in to vote' ) unless session(
         'cpanvote_username');
 
@@ -114,6 +116,9 @@ get '/dist/:dist/vote/:vote' => sub {
 };
 
 get '/dist/:dist/votes' => sub {
+
+    params->{dist} =~ s/::/-/g;
+
     my $dist = schema->resultset('Distributions')->find_or_create({ distname => params->{dist} } );
     my $votes = $dist->votes;
 
@@ -138,11 +143,13 @@ get '/dist/:dist/votes' => sub {
 
     if ( my $username = session('cpanvote_username') ) {
         my $user = schema->resultset('Users')->find({ username => $username });
-        if ( my $v = $dist->votes->find({ user_id =>
-                    $user->id    }) ) {
-            $data{my_vote} = $v->vote == -1 ? 'nea' : $v->vote == 1 ? 'yea' :
-            'meh';
-        }
+        my $v = $dist->votes->find({ user_id => $user->id    });
+
+        $data{my_vote} = !$v            ? undef 
+                       : $v->vote == -1 ? 'nea' 
+                       : $v->vote == 1  ? 'yea' 
+                       :                  'meh'
+                       ;
     }
 
     return \%data;

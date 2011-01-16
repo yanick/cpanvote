@@ -6,6 +6,13 @@ BEGIN {
     extends 'Catalyst::Controller::REST';
 }
 
+__PACKAGE__->config(
+    map => {
+        %{ __PACKAGE__->config->{'map'} },
+        "text/javascript" => "JSONP",
+    }
+);
+
 =head1 NAME
 
 cpanvote::Controller::Dist - Catalyst Controller
@@ -25,12 +32,85 @@ Catalyst Controller.
 sub base : Chained('/') : PathPart('dist') : CaptureArgs(1) {
     my ( $self, $c, $distname ) = @_;
 
-    $c->stash->{dist} =
-      $c->model('cpanvoteDB::Distributions')
-      ->find( { distname => $distname } )
-      or $self->status_not_found( $c,
-        message => "distribution $distname not found" )
-      and $c->detach;
+    $distname =~ s/::/-/g;
+
+    $c->stash->{dist} = $c->model('cpanvoteDB::Distributions')
+      ->find_or_create( { distname => $distname } );
+}
+
+sub votes :Chained('base') :PathPart('votes') :ActionClass('REST') :Args(0) {
+}
+
+sub votes_GET {
+    my ( $self, $c ) = @_;
+
+    my $votes = $c->stash->{dist}->votes;
+
+    # TODO Group By instead of this...
+    my ( $yea, $nea, $meh ) = (0,0,0);
+    while ( my $v = $votes->next ) {
+        if ( $v->vote == 1 ) {
+            $yea++;
+        }
+        elsif ( $v->vote == -1 ) {
+            $nea++;
+        }
+        else { $meh++ }
+    }
+
+    my %data = (
+        yea => $yea,
+        nea => $nea,
+        meh => $meh,
+        total => $yea + $meh + $nea,
+    );
+
+    if ( my $user_id = $c->session->{user_id} ) {
+        my $v = $c->stash->{dist}->votes->find({ user_id => $user_id });
+
+        $data{my_vote} = !$v            ? undef 
+                       : $v->vote == -1 ? 'nea' 
+                       : $v->vote == 1  ? 'yea' 
+                       :                  'meh'
+                       ;
+    }
+
+    $self->status_ok( $c, entity => \%data );
+}
+
+sub vote :Chained('base') :PathPart('vote') :ActionClass('REST') :Args(1) {
+}
+
+sub vote_PUT {
+    my ( $self, $c, $vote ) = @_;
+
+    return $self->status_bad_request( $c, 
+        message => 'you need to be logged in to vote' ) unless $c->session;
+
+    my %vote_score = (
+        yea => 1,
+        nea => -1,
+        meh => 0,
+    );
+
+    return $self->status_bad_request( $c,
+        message => "vote must be 'yea', 'nea' or 'meh'" ) 
+        unless exists $vote_score{$vote};
+
+    my $user = $c->model('cpanvoteDB::Users')->find({id =>
+            $c->session->{user_id} });
+
+    my $dist = $c->stash->{dist};
+
+    my $v = $user->find_or_create_related( 'votes', { dist_id => $dist->id } );
+
+    $v->vote( $vote_score{ $vote } );
+
+    $v->update;
+
+    $self->status_ok( $c, entity => {
+            message => 'success',
+        });
 }
 
 sub summary : Chained('base') : PathPart('summary') : ActionClass('REST') :
@@ -89,53 +169,7 @@ sub detailed_GET {
     $self->status_ok( $c, entity => \@data );
 }
 
-sub vote : Chained('base') : PathPart(vote) : ActionClass('REST') : Args(0) {
-}
-
-sub vote_PUT {
-    my ( $self, $c ) = @_;
-
-    $c->authenticate;
-
-    my %data = %{ $c->req->data };
-
-    my $instead = undef;
-    if ( $data{instead} ) {
-        $instead =
-          $c->model('cpanvoteDB::Distributions')
-          ->find( { distname => $data{instead} } )
-          or $self->status_bad_request( $c,
-            message => "distribution '$data{instead}' is not recognized" );
-    }
-
-    use Devel::Dwarn;
-
-    Dwarn %data;
-
-    my $user = $c->user;
-
-    $user->update_or_create_related(
-        'votes' => {
-            dist_id    => $c->stash->{dist}->id,
-            comment    => $data{comment},
-            vote       => $data{vote},
-            instead_id => $instead ? $instead->id : undef,
-        } );
-
-    $self->status_accepted( $c, entity => { status => 'accepted' } );
-
-}
-
-=head1 AUTHOR
-
-Yanick Champoux,,,
-
-=head1 LICENSE
-
-This library is free software. You can redistribute it and/or modify
-it under the same terms as Perl itself.
-
-=cut
-
 __PACKAGE__->meta->make_immutable;
+
+1;
 

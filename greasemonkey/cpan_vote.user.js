@@ -5,8 +5,10 @@
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
 // ==/UserScript==
 
-var cpanvote_url = "http://cpanvote.babyl.ca";
+var cpanvote_url = "http://enkidu:3000";
 var first_vote_grab = true;
+
+gm_xhr_bridge();
 
 $( function(){ 
     var rating_div = $($.grep( $('tr'), function(n,i){ 
@@ -23,7 +25,8 @@ $( function(){
     get_votes();
 });
 
-function get_votes () {
+
+function get_votes_old () {
     var dist = $('h1').text().replace( /-/, '::' );
 
     GM_xmlhttpRequest({
@@ -40,6 +43,22 @@ function get_votes () {
 
         }, 
     });
+}
+function get_votes () {
+    var dist = $('h1').text();
+
+    $.getJSON(
+        cpanvote_url + '/dist/' + dist + '/votes', 
+        function(data) {
+            var results = '+' + data["yea"] + ", 0 x " + data["meh"] + ", -" + data["nea"];
+            $('#cpanvotes').html( results );
+
+            if ( first_vote_grab ) {
+                prepare_voting(dist,data);
+            }
+
+        } 
+    );
 }
 
 function prepare_voting (dist,data) {
@@ -69,11 +88,92 @@ function prepare_voting (dist,data) {
         }
 
         $('#voting_station').find(':radio').click(function(){
-            GM_xmlhttpRequest({
+            $.ajax({
                 url: form_url + '/' + $('#voting_station').find(':radio:checked').val(),
-                method: 'GET',
-                onload: function(resp) { get_votes(); }
+                type: 'PUT',
+                dataType: 'json',
+                success: function() { get_votes(); }
             });
         })
     }
 } 
+
+
+// Wrapper function
+function GM_XHR() {
+    this.type = null;
+    this.url = null;
+    this.async = null;
+    this.username = null;
+    this.password = null;
+    this.status = null;
+    this.headers = {};
+    this.readyState = null;
+    
+    this.open = function(type, url, async, username, password) {
+        this.type = type ? type : null;
+        this.url = url ? url : null;
+        this.async = async ? async : null;
+        this.username = username ? username : null;
+        this.password = password ? password : null;
+        this.readyState = 1;
+    };
+    
+    this.setRequestHeader = function(name, value) {
+        this.headers[name] = value;
+    };
+        
+    this.abort = function() {
+        this.readyState = 0;
+    };
+    
+    this.getResponseHeader = function(name) {
+        return this.headers[name];
+    };
+    
+    this.send = function(data) {
+        this.data = data;
+        var that = this;
+        GM_xmlhttpRequest({
+            method: this.type,
+            url: this.url,
+            headers: this.headers,
+            data: this.data,
+            onload: function(rsp) {
+                // Populate wrapper object with all data returned from GM_XMLHttpRequest
+                for (k in rsp) {
+                    that[k] = rsp[k];
+                }
+            },
+            onerror: function(rsp) {
+                for (k in rsp) {
+                    that[k] = rsp[k];
+                }
+            },
+            onreadystatechange: function(rsp) {
+                for (k in rsp) {
+                    that[k] = rsp[k];
+                }
+            }
+        });
+    };
+};
+function gm_xhr_bridge() {
+// Author: Ryan Greenberg (ryan@ischool.berkeley.edu)
+// Date: September 3, 2009
+// Version: $Id: gm_jq_xhr.js 240 2009-11-03 17:38:40Z ryan $
+
+// This allows jQuery to make cross-domain XHR by providing
+// a wrapper for GM_xmlhttpRequest. The difference between
+// XMLHttpRequest and GM_xmlhttpRequest is that the Greasemonkey
+// version fires immediately when passed options, whereas the standard
+// XHR does not run until .send() is called. In order to allow jQuery
+// to use the Greasemonkey version, we create a wrapper object, GM_XHR,
+// that stores any parameters jQuery passes it and then creates GM_xmlhttprequest
+// when jQuery calls GM_XHR.send().
+
+// Tell jQuery to use the GM_XHR object instead of the standard browser XHR
+$.ajaxSetup({
+    xhr: function(){return new GM_XHR;}
+});
+}

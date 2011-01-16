@@ -2,57 +2,76 @@ package cpanvote::Controller::Auth;
 use Moose;
 use namespace::autoclean;
 
-BEGIN {extends 'Catalyst::Controller'; }
+BEGIN {extends 'Catalyst::Controller::REST'; }
 
-=head1 NAME
-
-cpanvote::Controller::Auth - Catalyst Controller
-
-=head1 DESCRIPTION
-
-Catalyst Controller.
-
-=head1 METHODS
-
-=cut
-
-
-=head2 index
-
-=cut
-
-sub index :Path :Args(0) {
-    my ( $self, $c ) = @_;
-
-    $c->response->body('Matched cpanvote::Controller::Auth in Auth.');
+sub authenticated :Local :ActionClass('REST') {
 }
 
-sub twitter_cli_auth :Local('twitter_cli') {
+sub authenticated_GET {
     my ( $self, $c ) = @_;
 
-    return $c->res->redirect(
-        $c->get_auth_realm('twitter_cli')->credential->authenticate_twitter_url($c)
-        );
+    my $id = $c->session->{user_id};
+    my $user = $id && $c->model('cpanvoteDB::Users')->find({ id => $id });
+
+    $c->stash->{user} = $user;
+
+    if ( $c->req->header('Accept') =~ m#text/html# ) {
+        $c->stash->{template} = 'auth/authenticated.mason';
+        $c->forward( 'Mason' );
+    } else {
+        $user ? $self->status_ok( $c, entity => {
+                username => $user->username
+            } )
+        : $self->status_not_found( $c, message => 'you are not logged in' ); 
+    }
+
 }
 
-sub twitter_auth :Local('twitter_cli') {
+sub twitter :Local {
     my ( $self, $c ) = @_;
 
-    return $c->res->redirect(
-        $c->get_auth_realm('twitter')->credential->authenticate_twitter_url($c)
-        );
+    $c->session->{return_url} = $c->req->header('Referer');
+
+    $c->res->redirect( 
+        $c->get_auth_realm('twitter')->credential->authenticate_twitter_url($c) 
+    );
 }
 
-=head1 AUTHOR
+sub twitter_callback :Path( 'twitter/callback' ) {
+    my ($self, $c) = @_;
 
-Yanick Champoux,,,
+    my $twitter = $c->get_auth_realm('twitter')->credential;
+    $twitter->authenticate_twitter( $c );
 
-=head1 LICENSE
+    my $tu = $twitter->twitter_user or return;
 
-This library is free software. You can redistribute it and/or modify
-it under the same terms as Perl itself.
+    my $auth = $c->model('cpanvoteDB::Auth')->find_or_create({
+        'protocol'   => 'twitter',
+        'credential' => $tu->{screen_name},
+    } );
 
-=cut
+    my $username = $tu->{screen_name};
+    unless ( $auth->user_id ) {
+        # create new user...
+            if ( $c->model('cpanvoteDB::Users')->find( { username => $username } ) ) {
+                    $username .= '_0';
+                    $username++
+                      while $c>model('cpanvoteDB::Users')
+                          ->find( { username => $username } );
+                }
+
+                my $u = $c->model('cpanvoteDB::Users')->create({ username => $username });
+                $auth->user_id( $u->id );
+                $auth->update;
+            }
+
+            $c->session->{user_id} = $auth->user_id;
+
+    return $c->res->redirect( $c->session->{return_url} ) if $c->session->{return_url};
+
+    $c->res->body( 'Hi there ' . $auth->user->username );
+
+}
 
 __PACKAGE__->meta->make_immutable;
 
