@@ -17,6 +17,11 @@ requires 'Config::General'; # This should reflect the config file format you've 
 requires 'Catalyst::Authentication::Credential::HTTP';
 requires 'Catalyst::Authentication::Store::DBIx::Class';
 requires 'Catalyst::View::Mason';
+requires 'Catalyst::Plugin::Session::PerUser';
+requires 'Catalyst::Plugin::Session::Store::DBIC';
+requires 'Catalyst::Authentication::Store::DBIx::Class';
+requires 'Cache::Memory';
+requires 'Catalyst::Controller::REST';
 
 test_requires 'Test::More' => '0.88';
 catalyst;
