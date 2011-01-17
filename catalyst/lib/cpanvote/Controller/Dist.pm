@@ -38,6 +38,59 @@ sub base : Chained('/') : PathPart('dist') : CaptureArgs(1) {
       ->find_or_create( { distname => $distname } );
 }
 
+sub instead :Chained('base') :PathPart('instead') :ActionClass('REST')  {
+}
+
+sub instead_GET {
+    my ( $self, $c ) = @_;
+
+    my $rs = $c->stash->{dist}->votes->search(undef,{
+            group_by => 'instead_id',
+            select => [
+                'instead_id',
+                'count(instead_id)',
+            ],
+            as => [
+                'instead_id',
+                'count',
+            ],
+        });
+
+    my %result;
+
+    while ( my $instead = $rs->next ) {
+        my $name = $c->model('cpanvoteDB::Distributions')->find({ id =>
+            $instead->instead_id })->distname;
+        $result{$name} = $instead->get_column('count');
+    }
+
+    $self->status_ok( $c, entity => \%result );
+}
+
+sub instead_PUT {
+    my ( $self, $c, $instead ) = @_;
+
+    return $self->status_bad_request( $c, 
+        message => 'you need to be logged in to vote' ) unless $c->session;
+
+    my $v = $c->stash->{dist}->find_or_create_related( 'votes', {
+            user_id => $c->session->{user_id},
+        });
+
+    my $instead_dist = $c->model('cpanvoteDB::Distributions')->find_or_create(
+        { distname => $instead }
+    );
+
+    $v->instead( $instead_dist );
+
+    $v->update;
+
+    $self->status_ok( $c, entity => {
+            message => 'success'
+        });
+
+}
+
 sub votes :Chained('base') :PathPart('votes') :ActionClass('REST') :Args(0) {
 }
 
@@ -143,30 +196,6 @@ sub summary_GET {
     $data{comments} = [ grep { defined } @comments ];
 
     $self->status_ok( $c, entity => \%data );
-}
-
-sub detailed : Chained('base') : PathPart('detailed') : ActionClass('REST') :
-  Args(0) {
-}
-
-sub detailed_GET {
-    my ( $self, $c ) = @_;
-
-    my $dist = $c->stash->{dist};
-
-    my @data;
-    for my $vote ( $dist->votes ) {
-        my %v;
-        $v{who} = $vote->user->username;
-        my $points = $vote->vote;
-        $points = '+1' if $points == 1;
-        $v{vote}    = $points;
-        $v{comment} = $vote->comment if $vote->comment;
-        $v{instead} = $vote->instead->distname if $vote->instead_id;
-        push @data, \%v;
-    }
-
-    $self->status_ok( $c, entity => \@data );
 }
 
 __PACKAGE__->meta->make_immutable;
