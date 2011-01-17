@@ -76,8 +76,8 @@ function prepare_voting (dist,data) {
         $( '#voting_station' ).html(
             "<form action='" + form_url + "'>"
             + '<input type="radio" name="vote" value="yea"> yea'
-            + '<input type="radio" name="vote" value="nea"> nea'
             + '<input type="radio" name="vote" value="meh"> meh'
+            + '<input type="radio" name="vote" value="nea"> nea'
             + '</form>'
         );
 
@@ -94,9 +94,41 @@ function prepare_voting (dist,data) {
                 dataType: 'json',
                 success: function() { get_votes(); }
             });
-        })
+        });
+
+        var instead_form_url = cpanvote_url + '/dist/' + dist + '/instead';
+        $('#voting_station').append(
+                '<form id="instead_form" action="' + instead_form_url +'">'
+                + 'instead, use <input id="instead" name="instead" />'
+                + '<input type="button" value="submit" id="instead_submit" />'
+                + '</form>'
+        );
+
+        $('#instead_submit').click(function(){ submit_instead() } );
     }
 } 
+
+function submit_instead() {
+    var form = $('#instead_form');
+
+    var instead = form.find('#instead').val().replace( /::/g, '-' );
+
+    if ( instead == "" ) {
+        return;
+    }
+
+    var url = form.attr('action');
+
+    $.ajax({
+        url: form.attr('action') + '/' + instead,
+        type: 'PUT',
+        dataType: 'json',
+        success: function() { 
+            // ... 
+        }
+    });
+
+}
 
 
 // Wrapper function
