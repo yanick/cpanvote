@@ -41,7 +41,7 @@ function get_votes_old () {
                 prepare_voting(dist,data);
             }
 
-        }, 
+        }
     });
 }
 function get_votes () {
