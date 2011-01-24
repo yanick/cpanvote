@@ -38,10 +38,13 @@ sub base : Chained('/') : PathPart('dist') : CaptureArgs(1) {
       ->find_or_create( { distname => $distname } );
 }
 
-sub instead :Chained('base') :PathPart('instead') :ActionClass('REST')  {
+sub instead :Chained('base') :PathPart('instead') :CaptureArgs(0) { }
+
+sub instead_info :Chained('instead') :PathPart('') :ActionClass('REST')
+:Args(0) {
 }
 
-sub instead_GET {
+sub instead_info_GET {
     my ( $self, $c ) = @_;
 
     my $rs = $c->stash->{dist}->votes->search(undef,{
@@ -56,18 +59,27 @@ sub instead_GET {
             ],
         });
 
-    my %result;
+    my @dists;
 
     while ( my $instead = $rs->next ) {
         my $name = $c->model('cpanvoteDB::Distributions')->find({ id =>
             $instead->instead_id })->distname;
-        $result{$name} = $instead->get_column('count');
+        push @dists, {
+                distname => $name,
+                count => $instead->get_column('count'),
+        };
     }
 
-    $self->status_ok( $c, entity => \%result );
+    $self->status_ok( $c, entity => {
+            dists => \@dists,
+        });
 }
 
-sub instead_PUT {
+sub instead_edit :Chained('instead') :PathPart('use') :ActionClass('REST')
+:Args(1) {
+}
+
+sub instead_edit_PUT {
     my ( $self, $c, $instead ) = @_;
 
     return $self->status_bad_request( $c, 

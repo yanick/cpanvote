@@ -4,10 +4,10 @@ use namespace::autoclean;
 
 BEGIN {extends 'Catalyst::Controller::REST'; }
 
-sub authenticated :Local :ActionClass('REST') {
+sub whoami :Local :ActionClass('REST') {
 }
 
-sub authenticated_GET {
+sub whoami_GET {
     my ( $self, $c ) = @_;
 
     my $id = $c->session->{user_id};
@@ -22,9 +22,21 @@ sub authenticated_GET {
         $user ? $self->status_ok( $c, entity => {
                 username => $user->username
             } )
-        : $self->status_not_found( $c, message => 'you are not logged in' ); 
+        : $self->status_not_found($c, message => 'not logged in' ); 
     }
 
+}
+
+sub test :Local {
+    my ( $self, $c ) = @_;
+
+    my $user = $c->model('cpanvoteDB::Users')->find_or_create({ 
+        username => 'Tester',
+    });
+
+    $c->session->{user_id} = $user->id;
+
+    $self->status_ok( $c, entity => {} );
 }
 
 sub twitter :Local {

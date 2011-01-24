@@ -5,7 +5,7 @@
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
 // ==/UserScript==
 
-var cpanvote_url = "http://enkidu:3000";
+var cpanvote_url = "http://cpanvote.babyl.ca";
 var first_vote_grab = true;
 
 gm_xhr_bridge();
@@ -17,12 +17,16 @@ $( function(){
 
     rating_div.after( 
         "<tr><td class='label'>CPAN Votes</td>"
-    + "<td class='cell' colspan='3'><div id='cpanvotes'></div>" 
+    + "<td class='cell' colspan='3'><div id='cpanvotes'>"
+    + "<span class='votes'></span> "
+    + "<div class='recommends'></div>"
+    + "</div>" 
     + "<div id='voting_station'></div>"
     + "</td></tr>"
     );
 
     get_votes();
+    get_instead();
 });
 
 
@@ -41,7 +45,7 @@ function get_votes_old () {
                 prepare_voting(dist,data);
             }
 
-        }
+        }, 
     });
 }
 function get_votes () {
@@ -51,7 +55,7 @@ function get_votes () {
         cpanvote_url + '/dist/' + dist + '/votes', 
         function(data) {
             var results = '+' + data["yea"] + ", 0 x " + data["meh"] + ", -" + data["nea"];
-            $('#cpanvotes').html( results );
+            $('#cpanvotes .votes').html( results );
 
             if ( first_vote_grab ) {
                 prepare_voting(dist,data);
@@ -59,6 +63,33 @@ function get_votes () {
 
         } 
     );
+}
+
+function get_instead () {
+    var dist = $('h1').text();
+
+    $.getJSON(
+        cpanvote_url + '/dist/' + dist + '/instead', 
+        function(data) {
+            var dists = "dists" in data ? data["dists"] : new Array();
+
+            var text = "";
+
+            if ( dists.length > 0 ) {
+                text = "peeps recommend instead : ";
+
+                for ( var i = 0; i < dists.length; i++ ) {
+                    if ( i > 0 ) {
+                        text += ', ';
+                    }
+                    text += dists[i].distname;
+                }
+            }
+
+            $('#cpanvotes .recommends').html( text );
+        } 
+    );
+
 }
 
 function prepare_voting (dist,data) {
@@ -96,7 +127,7 @@ function prepare_voting (dist,data) {
             });
         });
 
-        var instead_form_url = cpanvote_url + '/dist/' + dist + '/instead';
+        var instead_form_url = cpanvote_url + '/dist/' + dist + '/instead/use';
         $('#voting_station').append(
                 '<form id="instead_form" action="' + instead_form_url +'">'
                 + 'instead, use <input id="instead" name="instead" />'
@@ -124,6 +155,7 @@ function submit_instead() {
         type: 'PUT',
         dataType: 'json',
         success: function() { 
+            get_instead();
             // ... 
         }
     });
