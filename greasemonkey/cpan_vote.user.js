@@ -1,53 +1,39 @@
 // ==UserScript==
 // @name           CPAN Vote
 // @namespace      http://babyl.ca/cpanvote
-// @include        http://search.cpan.org/dist/*
+// @include        http://search.cpan.org/*
 // @require        http://ajax.googleapis.com/ajax/libs/jquery/1.3.2/jquery.min.js
 // ==/UserScript==
 
 var cpanvote_url = "http://cpanvote.babyl.ca";
 var first_vote_grab = true;
 
-gm_xhr_bridge();
+// looks like a dist page?
+if ( $('td:contains("This Release")').length > 0 ) {
 
-$( function(){ 
-    var rating_div = $($.grep( $('tr'), function(n,i){ 
-        return $(n).find('td').text().match( /Rating/ ) })[0]
-    );
+    gm_xhr_bridge();
 
-    rating_div.after( 
-        "<tr><td class='label'>CPAN Votes</td>"
-    + "<td class='cell' colspan='3'><div id='cpanvotes'>"
-    + "<span class='votes'></span> "
-    + "<div class='recommends'></div>"
-    + "</div>" 
-    + "<div id='voting_station'></div>"
-    + "</td></tr>"
-    );
+    $( function(){ 
+        var rating_div = $($.grep( $('tr'), function(n,i){ 
+            return $(n).find('td').text().match( /Rating/ ) })[0]
+        );
 
-    get_votes();
-    get_instead();
-});
+        rating_div.after( 
+            "<tr><td class='label'>CPAN Votes</td>"
+        + "<td class='cell' colspan='3'><div id='cpanvotes'>"
+        + "<span class='votes'></span> "
+        + "<div class='recommends'></div>"
+        + "</div>" 
+        + "<div id='voting_station'></div>"
+        + "</td></tr>"
+        );
 
-
-function get_votes_old () {
-    var dist = $('h1').text().replace( /-/, '::' );
-
-    GM_xmlhttpRequest({
-        method: "GET",
-        url: cpanvote_url + '/dist/' + dist + '/votes', 
-        onload: function(resp) {
-            var data = JSON.parse(resp.responseText);
-            var results = '+' + data["yea"] + ", 0 x " + data["meh"] + ", -" + data["nea"];
-            $('#cpanvotes').html( results );
-
-            if ( first_vote_grab ) {
-                prepare_voting(dist,data);
-            }
-
-        }, 
+        get_votes();
+        get_instead();
     });
+
 }
+
 function get_votes () {
     var dist = $('h1').text();
 
